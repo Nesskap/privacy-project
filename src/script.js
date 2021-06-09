@@ -183,6 +183,10 @@ loadingManager.onLoad = function(){
     uiIcons.classList.add('visible')
 };
 
+loadingManager.onError = function(url){
+    console.log('Error loading assets :(' + url)
+}
+
 document.querySelector('.label').addEventListener("click", ()=>
 {
     document.querySelector('.label').style.opacity = `0`
