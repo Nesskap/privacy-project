@@ -3,6 +3,15 @@
 //BY NESSKAP
 ////////////////////////
 
+////////////////////////
+// COMANDS TO UPDATE GITHUB REPOSITORY
+// npm run build -> First we update the webpack bundle with
+// git add . -> Then we add the updated files to upload
+// git commit -m "YOUR_COMMIT_MESSAGE" -> We add a commit message
+// git push origin master -> Push de updated files to the master branch at the repository
+// npm run deploy ->Accept changes and deploy the site in gh-pages branch at repository
+////////////////////////
+
 //IMPORTS ----------------------------------------------------------------------->
 import './style.css'
 import * as THREE from 'three'
@@ -278,7 +287,7 @@ scene.add(camera)
 //TEXTURES ----------------------------------------------------------------------->
 const textureLoader = new THREE.TextureLoader(loadingManager)
 
-const matcapTexture = textureLoader.load('/textures/matcaps/0.png')
+const matcapTexture = textureLoader.load('textures/matcaps/0.png')
 //<--------------------------------------------------------------------------------END TEXTURES>
 
 //FONTS ----------------------------------------------------------------------->
