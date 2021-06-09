@@ -491,6 +491,7 @@ gltfLoader.load(
 )
 
 gltfLoader.load('models/people/AnaGarza.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/AndreaBandinelli.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
 gltfLoader.load('models/people/AngelLeon.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
 gltfLoader.load('models/people/BetoRamos.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
 gltfLoader.load('models/people/HectorGutierrez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
