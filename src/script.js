@@ -124,7 +124,8 @@ document.getElementById('fullscreen').addEventListener("click", ()=>
 });
 
 /* BACKGROUND MUSIC */
-var audio = new Audio('/sounds/SuspenseMusic_DAGAProds.mp3');
+var audio = new Audio('sounds/SuspenseMusic_DAGAProds.mp3');
+audio.volume = 0.6
 
 audio.addEventListener('ended', function() {
     this.currentTime = 0;
@@ -135,7 +136,6 @@ document.getElementById('mute').addEventListener("click", ()=>
 {
     if (audio.paused) {
         audio.play();
-        audio.volume = 0.5
     } else{
         audio.pause()
     }
@@ -191,6 +191,7 @@ document.querySelector('.label').addEventListener("click", ()=>
 {
     document.querySelector('.label').style.opacity = `0`
     RESOURCES_LOADED = true
+    controls.lock();
     audio.play();
 })
 //<--------------------------------------------------------------------------------END LOADING OVERLAY>
@@ -293,7 +294,7 @@ let textMesh5 = null
 let textsY = -3
 
 fontLoader.load(
-    '/fonts/Staatliches_Regular.json',
+    'fonts/Staatliches_Regular.json',
     (font)=>
     {
         const text1 = 'Hello.\nWelcome Again.'
@@ -417,7 +418,7 @@ fontLoader.load(
 //MODELS ----------------------------------------------------------------------->
 /* Loaders */
 const dracoLoader = new DRACOLoader(loadingManager)
-dracoLoader.setDecoderPath('/draco/')
+dracoLoader.setDecoderPath('./draco/')
 
 const gltfLoader = new GLTFLoader(loadingManager)
 gltfLoader.setDRACOLoader(dracoLoader)
@@ -440,7 +441,7 @@ boundingBoxMaterial.transparent = true;
 boundingBoxMaterial.opacity = 0
 
 gltfLoader.load(
-    '/models/scene/pathDome2.glb',
+    'models/scene/pathDome2.glb',
     (glb) =>
     {
         const children = [...glb.scene.children]
@@ -471,7 +472,7 @@ gltfLoader.load(
 
 const expositorsMaterial = new THREE.MeshLambertMaterial({color: 'black'})
 gltfLoader.load(
-    '/models/scene/expositors.glb',
+    'models/scene/expositors.glb',
     (glb)=>
     {
         glb.scene.children[0].material = expositorsMaterial
@@ -480,20 +481,20 @@ gltfLoader.load(
     }
 )
 
-gltfLoader.load('/models/people/AnaGarza.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/AngelLeon.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/BetoRamos.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/HectorGutierrez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/JorgeLorenzo.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/JorgeNavarro.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/KarlaVelazquez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/LorenaNajera.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/MarthaMendoza.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/MiguelAlayo.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/Ness.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/NicoleLeon.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/OscarLopez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('/models/people/RobertoGonzalez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/AnaGarza.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/AngelLeon.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/BetoRamos.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/HectorGutierrez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/JorgeLorenzo.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/JorgeNavarro.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/KarlaVelazquez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/LorenaNajera.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/MarthaMendoza.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/MiguelAlayo.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/Ness.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/NicoleLeon.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/OscarLopez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
+gltfLoader.load('models/people/RobertoGonzalez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
 
 
 //<--------------------------------------------------------------------------------END MODELS>
@@ -563,7 +564,7 @@ function onKeyDown(event) {
         case 'SHIFT':
             if (player.walk < player.run){
                 player.walk += player.run
-                gui.animateDisplay()
+                // gui.animateDisplay()
             }
             break;
     }
@@ -590,7 +591,7 @@ function onKeyUp(event) {
             break;
         case 'SHIFT':
             player.walk -= player.run
-            gui.animateDisplay()
+            // gui.animateDisplay()
             break;
     }
     if (!isForward && !isBackward && !isLeft && !isRight)
