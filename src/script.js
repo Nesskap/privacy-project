@@ -34,24 +34,13 @@ function debugUI ()
 
     const gui = new dat.GUI()
     const parameters = {
-    cubeColor: 0xffffff,
-    sceneMaterialColor: 0x000000
-}
-
-    /* PLAYER DEBUG */
-    const playerGUI = gui.addFolder('Player')
-
-    playerGUI
-        .add(player,'walk')
-        .min(0.05)
-        .max(1)
-        .step(0.01)
-        .name('Speed')
-    /////////////////////
+        cubeColor: 0xffffff,
+        sceneMaterialColor: 0x000000,
+        domeMaterialEmissionColor: 0x000000
+    }
 
     /* MATERIAL DEBUG */
     const materialsGUI = gui.addFolder('Materials')
-    const textMaterialGUI = materialsGUI.addFolder('Text Material')
     const sceneMaterialGUI = materialsGUI.addFolder('Scene Material')
     const domeMaterialGUI = materialsGUI.addFolder('Dome Material')
 
@@ -61,17 +50,16 @@ function debugUI ()
         {
             sceneMaterial.color = new THREE.Color(parameters.sceneMaterialColor)
         })
-    
-    sceneMaterialGUI.add(sceneMaterial,'opacity').min(0).max(1).step(0.01)
-    /////////////////////
 
-    //Cube color
-    materialsGUI
-        .addColor(parameters,'cubeColor')
-        .onChange(()=>
-        {
-            cube.material.color = new THREE.Color(parameters.cubeColor)
-        })
+    sceneMaterialGUI.add(sceneMaterial,'opacity').min(0).max(1).step(0.01)
+
+    domeMaterialGUI.addColor(parameters,'domeMaterialEmissionColor')
+    .onChange(()=>
+    {
+        domeInMaterial.emissive = new THREE.Color(parameters.domeMaterialEmissionColor)
+        scene.fog.color = new THREE.Color(parameters.domeMaterialEmissionColor)
+    })
+    /////////////////////
 
     /* END LIGHT DEBUG */
     const endlightGUI = gui.addFolder('End Light')
@@ -174,7 +162,6 @@ loadingScreen.scene.add(loadingScreen.loadingBar)
 const loadingManager = new THREE.LoadingManager()
 
 loadingManager.onProgress = function(item, loaded, total){
-    // console.log( 'Loading file: ' + item + '.\nLoaded ' + loaded + ' of ' + total + ' files.' );
     loadingScreen.loadingBar.scale.x = (4/total) * loaded
 };
 
@@ -230,6 +217,7 @@ window.addEventListener('resize',() =>
 
 //LIGHTS ----------------------------------------------------------------------->
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+ambientLight.name = 'pito'
 ambientLight.position.set(0,1,0)
 scene.add(ambientLight);
 
@@ -254,7 +242,7 @@ const spotlightsTargets = []
 
 const textsDistance = 33
 
-for (let i= 0; i < 6; i++) {
+for (let i= 0; i < 5; i++) {
     //Spotlight Targets to aim down
     spotlightsTargets.push(new THREE.Object3D())
     spotlightsTargets[i].position.set(0, 0, (i+1) * -textsDistance)
@@ -266,21 +254,17 @@ for (let i= 0; i < 6; i++) {
     scene.add(spotlightArray[i])
 }
 
-spotlightArray[spotlightArray.length-1].position.set(0, 10, -275)
-spotlightsTargets[spotlightsTargets.length-1].position.set(0, 0, -275)
-spotlightArray[spotlightArray.length-1].target = spotlightsTargets[spotlightsTargets.length-1]
-spotlightArray[spotlightArray.length-1].power = 100
-spotlightArray[spotlightArray.length-1].angle = 1.72
-spotlightArray[spotlightArray.length-1].distance = 289
-spotlightArray[spotlightArray.length-1].penumbra = 1
-spotlightArray[spotlightArray.length-1].decay = 2
+const areaLight = new THREE.RectAreaLight(0xffffff, 1, 200, 200)
+areaLight.position.set(0, 10, -280)
+areaLight.lookAt(0, 0, -280)
+scene.add(areaLight)
 
 //<--------------------------------------------------------------------------------END LIGHTS>
 
 //CAMERA ----------------------------------------------------------------------->
 const camera = new THREE.PerspectiveCamera(65,sizes.width/sizes.height,0.01,1000);
-camera.position.set(0,0,18)
-camera.lookAt(0,0,0)
+camera.position.z = 18
+// camera.lookAt(0,0,0)
 scene.add(camera)
 //<--------------------------------------------------------------------------------END CAMERA>
 
@@ -419,6 +403,7 @@ fontLoader.load(
         
         //Add Texts to Scene
         scene.add(textMesh1, textMesh2, textMesh3, textMesh4, textMesh5)
+
     }
 )
 
@@ -434,12 +419,11 @@ gltfLoader.setDRACOLoader(dracoLoader)
 
 /* Materials */
 const sceneMaterial = new THREE.MeshStandardMaterial()
-sceneMaterial.color = new THREE.Color('black')
+sceneMaterial.color = new THREE.Color('#020202')
 
-const domeInMaterial = new THREE.MeshBasicMaterial()
+const domeInMaterial = new THREE.MeshStandardMaterial()
 domeInMaterial.color = new THREE.Color('black')
-domeInMaterial.transparent = true;
-domeInMaterial.opacity = 0.5
+domeInMaterial.emissive = new THREE.Color('black')
 
 const domeExtMaterial = new THREE.MeshBasicMaterial()
 domeExtMaterial.color = new THREE.Color('black')
@@ -479,33 +463,27 @@ gltfLoader.load(
     },
 )
 
-const expositorsMaterial = new THREE.MeshLambertMaterial({color: 'black'})
 gltfLoader.load(
     'models/scene/expositors.glb',
     (glb)=>
     {
-        glb.scene.children[0].material = expositorsMaterial
+        glb.scene.children[0].material = sceneMaterial
         glb.scene.children[0].receiveShadow = true;
         scene.add(glb.scene.children[0])
     }
 )
 
-gltfLoader.load('models/people/AnaGarza.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/AndreaBandinelli.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/AngelLeon.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/BetoRamos.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/HectorGutierrez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/JorgeLorenzo.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/JorgeNavarro.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/KarlaVelazquez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/LorenaNajera.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/MarthaMendoza.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/MiguelAlayo.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/Ness.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/NicoleLeon.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/OscarLopez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
-gltfLoader.load('models/people/RobertoGonzalez.gltf',(gltf)=>{scene.add(gltf.scene.children[0])})
 
+//Load all character models
+let statues = null
+
+gltfLoader.load('models/all/allModels.gltf',
+(gltf)=>{
+    statues = [...gltf.scene.children]
+    for(let child of statues){
+        scene.add(child)
+    }
+})
 
 //<--------------------------------------------------------------------------------END MODELS>
 
@@ -538,8 +516,9 @@ canvas.addEventListener('click', () =>
 /* PLAYER MOVEMENT */
 const player = 
 {
-    walk: 0.1,
-    run: 0.9
+    speed: 0.07,
+    walk: 0.07,
+    run: 0.07
 }
 let isMoving = false;
 let isForward = false;
@@ -572,10 +551,8 @@ function onKeyDown(event) {
             isRight = true;
             break;
         case 'SHIFT':
-            if (player.walk < player.run){
-                player.walk += player.run
-                // gui.animateDisplay()
-            }
+            if (player.speed < (player.walk+player.run))
+                player.speed += player.run
             break;
     }
 }
@@ -600,8 +577,7 @@ function onKeyUp(event) {
             isRight = false;
             break;
         case 'SHIFT':
-            player.walk -= player.run
-            // gui.animateDisplay()
+            player.speed -= player.run
             break;
     }
     if (!isForward && !isBackward && !isLeft && !isRight)
@@ -644,46 +620,37 @@ function move() {
                 if (isMoving) {
                     //Front
                     if (i == 0) {
-                        //console.log(rays);
-                        console.log('front');
                         isForward = false;
                     }
                     //Front-Left
                     if (i == 1) {
-                        console.log('front-left');
                         isForward = false;
                         isLeft = false;
                     }
                     //Left
                     if (i == 2) {
-                        console.log('left');
                         isLeft = false;
                     }
                     //Back-Left
                     if (i == 3) {
-                        console.log('back-left');
                         isBackward = false;
                         isLeft = false;
                     }
                     //Back
                     if (i == 4) {
-                        console.log('back');
                         isBackward = false;
                     }
                     //Back-Right
                     if (i == 5) {
-                        console.log('back-left');
                         isBackward = false;
                         isRight = false;
                     }
                     //Right
                     if (i == 6) {
-                        console.log('right');
                         isRight = false;
                     }
                     ////Front-right
                     if (i == 7) {
-                        console.log('front-right');
                         isForward = false;
                         isRight = false;
                     }
@@ -693,16 +660,16 @@ function move() {
 
     if (isMoving) {
         if (isForward) {
-            controls.moveForward(player.walk);
+            controls.moveForward(player.speed);
         }
         if (isBackward) {
-            controls.moveForward(-player.walk);
+            controls.moveForward(-player.speed);
         }
         if (isRight) {
-            controls.moveRight(player.walk / 2);
+            controls.moveRight(player.speed / 2);
         }
         if (isLeft) {
-            controls.moveRight(-player.walk / 2);
+            controls.moveRight(-player.speed / 2);
         }
         camera.position.set = pos;
     }
@@ -712,6 +679,8 @@ function move() {
 
 //animate EVERY FRAME ----------------------------------------------------------------------->
 const clock = new THREE.Clock();
+let domeTime = null
+let domeTimecatch = false
 
 scene.fog = new THREE.Fog(0x000000,30,100)
 let changeFog = false
@@ -743,6 +712,9 @@ function textTrigger(meshtoTrigger,active) {
     }
 }
 
+const frustum = new THREE.Frustum()
+let matrix = new THREE.Matrix4()
+
 function animate() {
 
     if (RESOURCES_LOADED == false){
@@ -756,11 +728,48 @@ function animate() {
 
     const elapsedTime = clock.getElapsedTime()
 
+    //Camera Fustrum Check update
+    matrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
+    frustum.setFromProjectionMatrix( matrix );
+
+    if (elapsedTime > (domeTime + 60)){
+        if (!frustum.intersectsObject(statues[0]))
+            statues[0].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[1]))
+            statues[1].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[2]))
+            statues[2].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[3]))
+            statues[3].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[4]))
+            statues[4].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[5]))
+            statues[5].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[6]))
+            statues[6].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[7]))
+            statues[7].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[8]))
+            statues[8].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[9]))
+            statues[9].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[10]))
+            statues[10].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[11]))
+            statues[11].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[12]))
+            statues[12].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[13]))
+            statues[13].lookAt(camera.position)
+        if (!frustum.intersectsObject(statues[14]))
+            statues[14].lookAt(camera.position)
+    }
+
     requestAnimationFrame(animate)
 
     move();
 
-    // console.log(camera.position.z);
+    console.log(camera.position.z);
 
     if (camera.position.z < 15 && camera.position.z > -5){
         textTrigger(textMesh1, textTrigger1)
@@ -781,6 +790,13 @@ function animate() {
     if (camera.position.z < -105 && camera.position.z > -125){
         textTrigger(textMesh5, textTrigger5)
         textTrigger5 = true
+    }
+
+    if ((camera.position.z < -173) && !domeTimecatch){
+        domeTime = elapsedTime
+        domeTimecatch = true;
+        console.log(domeTime);
+        console.log(domeTime+60);
     }
 
     //Fog Change
