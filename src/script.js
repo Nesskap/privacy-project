@@ -222,6 +222,7 @@ document.querySelector('.label').addEventListener("click", ()=>
     document.querySelector('.controls').classList.remove('visible')
     RESOURCES_LOADED = true
     controls.lock();
+    video.play()
     window.setTimeout(()=> {suspenseAmbientSound.play()},1000);
 })
 //<--------------------------------------------------------------------------------END LOADING OVERLAY>
@@ -316,7 +317,6 @@ const matcapTexture = textureLoader.load('textures/matcaps/0.png')
 const video = document.createElement( 'video' );
 video.src = 'videos/hack480.webm'
 video.playbackRate = 9
-video.autoplay = true;
 video.loop = true;
 video.preload = 'auto';
 
