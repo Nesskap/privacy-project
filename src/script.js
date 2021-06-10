@@ -315,7 +315,7 @@ const matcapTexture = textureLoader.load('textures/matcaps/0.png')
 //VIDEO TEXTURES
 const video = document.createElement( 'video' );
 video.src = 'videos/hack480.webm'
-video.playbackRate = 10
+video.playbackRate = 9
 video.autoplay = true;
 video.loop = true;
 video.preload = 'auto';
