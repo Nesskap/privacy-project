@@ -8,6 +8,7 @@
 html,
 body{
     overflow: hidden;
+    font-family: Staatliches;
 }
 
 .myCanvas {
@@ -33,7 +34,6 @@ body{
     border-radius: 10px;
     background-color: #2e2e2e77;
     color: white;
-    font-family: Staatliches;
     font-size: x-large;
     text-align: center;
     line-height: 40px;
@@ -52,9 +52,26 @@ body{
     transition: opacity .2s;
 }
 
+.controls {
+    position: absolute;
+    width: 150px;
+    height: 80px;
+    bottom: 5%;
+    left: 3%;
+    opacity: 0;
+    transition: opacity 0.3s;
+    color: white;
+    text-align: center;
+}
+
+.controls.visible {
+    opacity: 1;
+    transition: opacity 3s;
+}
+
 .icons {
     position: absolute;
-    width: 95px;
+    width: 120px;
     height: 32px;
     bottom: 5%;
     right: 3%;
@@ -73,10 +90,28 @@ img {
     transition: opacity .3s;
     max-width: 100%;
     max-height: 100%;
-    padding-left: 15px;
+    padding-right: 5px;
 }
 
-img:hover {
+.icons img:hover {
     opacity: 0.5;
     transition: opacity .1s;
+}
+
+.credits {
+    position: absolute;
+    right: 5%;
+    bottom: 20%;
+    border-radius: 10px;
+    font-size: x-large;
+    text-align: right;
+    line-height: 40px;
+    opacity: 0;
+    transition: opacity 1s;
+    cursor: default;
+}
+
+.credits.visible {
+    opacity: 1;
+    transition: opacity 1s;
 }

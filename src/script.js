@@ -21,7 +21,13 @@ import {PointerLockControls} from 'three/examples/jsm/controls/PointerLockContro
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
 import {DRACOLoader} from 'three/examples/jsm/loaders/DRACOLoader.js'
 import Stats from 'stats.js'
-// //<--------------------------------------------------------------------------------END IMPORTS>
+
+import {EffectComposer} from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import {RenderPass} from 'three/examples/jsm/postprocessing/RenderPass.js'
+import {FilmPass} from 'three/examples/jsm/postprocessing/FilmPass.js'
+import {GlitchPass} from 'three/examples/jsm/postprocessing/GlitchPass.js'
+import {SMAAPass} from'three/examples/jsm/postprocessing/SMAAPass.js'
+//<--------------------------------------------------------------------------------END IMPORTS>
 
 //DEBUG ----------------------------------------------------------------------->
 /* Stats */
@@ -29,36 +35,53 @@ const stats = new Stats()
 
 function debugUI ()
 {
-    stats.showPanel(0)
-    document.body.appendChild(stats.dom)
+    // stats.showPanel(0)
+    // document.body.appendChild(stats.dom)
 
     const gui = new dat.GUI()
+    gui.hide()
     const parameters = {
-        cubeColor: 0xffffff,
         sceneMaterialColor: 0x000000,
-        domeMaterialEmissionColor: 0x000000
+        domeMaterialEmissionColor: 0x000000,
+        resetValues: () =>{
+            console.log('pito');
+            filmPass.uniforms.grayscale = false
+            filmPass.uniforms.nIntensity = 0.2
+            filmPass.uniforms.sIntensity = 0.15
+            filmPass.uniforms.sCount = 512
+        }
     }
 
+    //Post Processing DEBUG
+    const postProGUI = gui.addFolder('Post-Processing')
+    
+    postProGUI.add(filmPass, 'enabled')
+    postProGUI.add(filmPass.uniforms.grayscale, 'value').name("grayscale").listen()
+    postProGUI.add(filmPass.uniforms.nIntensity, 'value',0,1).name("noiseInstensity").step(0.01).listen()
+    postProGUI.add(filmPass.uniforms.sIntensity, 'value',0,100).name("linesIntensity").step(0.05).listen()
+    postProGUI.add(filmPass.uniforms.sCount, 'value',0,2000).name("lineCount").step(1).listen()
+    postProGUI.add(parameters,'resetValues')
+
     /* MATERIAL DEBUG */
-    const materialsGUI = gui.addFolder('Materials')
-    const sceneMaterialGUI = materialsGUI.addFolder('Scene Material')
-    const domeMaterialGUI = materialsGUI.addFolder('Dome Material')
+    // const materialsGUI = gui.addFolder('Materials')
+    // const sceneMaterialGUI = materialsGUI.addFolder('Scene Material')
+    // const domeMaterialGUI = materialsGUI.addFolder('Dome Material')
 
-    sceneMaterialGUI
-        .addColor(parameters,'sceneMaterialColor')
-        .onChange(()=>
-        {
-            sceneMaterial.color = new THREE.Color(parameters.sceneMaterialColor)
-        })
+    // sceneMaterialGUI
+    //     .addColor(parameters,'sceneMaterialColor')
+    //     .onChange(()=>
+    //     {
+    //         sceneMaterial.color = new THREE.Color(parameters.sceneMaterialColor)
+    //     })
 
-    sceneMaterialGUI.add(sceneMaterial,'opacity').min(0).max(1).step(0.01)
+    // sceneMaterialGUI.add(sceneMaterial,'opacity').min(0).max(1).step(0.01)
 
-    domeMaterialGUI.addColor(parameters,'domeMaterialEmissionColor')
-    .onChange(()=>
-    {
-        domeInMaterial.emissive = new THREE.Color(parameters.domeMaterialEmissionColor)
-        scene.fog.color = new THREE.Color(parameters.domeMaterialEmissionColor)
-    })
+    // domeMaterialGUI.addColor(parameters,'domeMaterialEmissionColor')
+    // .onChange(()=>
+    // {
+    //     domeInMaterial.emissive = new THREE.Color(parameters.domeMaterialEmissionColor)
+    //     scene.fog.color = new THREE.Color(parameters.domeMaterialEmissionColor)
+    // })
     /////////////////////
 
     /* END LIGHT DEBUG */
@@ -78,6 +101,9 @@ function debugUI ()
 //<--------------------------------------------------------------------------------END DEBUG>
 
 //UI ----------------------------------------------------------------------->
+var imgSettings = document.createElement('img')
+imgSettings.src = './icons/settings.png'
+imgSettings.id = 'bars'
 var imgSpeaker = document.createElement('img')
 imgSpeaker.src = './icons/speakerIcon.png'
 imgSpeaker.id = 'mute'
@@ -85,9 +111,19 @@ var imgFullscreen = document.createElement('img')
 imgFullscreen.src = './icons/fullscreenIcon.png'
 imgFullscreen.id = 'fullscreen'
 
+var imgTeclas = document.createElement('img')
+imgTeclas.src = './images/teclas.png'
+imgTeclas.id = 'teclas'
+
 var src = document.querySelector('.icons');
+src.appendChild(imgSettings);
 src.appendChild(imgSpeaker);
 src.appendChild(imgFullscreen);
+
+src = document.querySelector('.controls')
+src.appendChild(imgTeclas);
+
+
 
 document.getElementById('fullscreen').addEventListener("click", ()=>
 {
@@ -120,21 +156,17 @@ document.getElementById('fullscreen').addEventListener("click", ()=>
     }
 });
 
-/* BACKGROUND MUSIC */
-var audio = new Audio('sounds/SuspenseMusic_DAGAProds.mp3');
-audio.volume = 0.6
+let credits = false
 
-audio.addEventListener('ended', function() {
-    this.currentTime = 0;
-    this.play();
-}, false);
-
-document.getElementById('mute').addEventListener("click", ()=>
+document.getElementById('bars').addEventListener("click", ()=>
 {
-    if (audio.paused) {
-        audio.play();
+    if (!credits){
+        document.querySelector('.credits').style.color = `white`
+        document.querySelector('.credits').classList.add('visible')
+        credits = true;
     } else{
-        audio.pause()
+        document.querySelector('.credits').classList.remove('visible')
+        credits = false;
     }
 })
 //<-------------------------------------------------------------------------------- END UI>
@@ -177,6 +209,7 @@ loadingManager.onLoad = function(){
     ui.classList.add('visible')
     const uiIcons = document.querySelector('.icons')
     uiIcons.classList.add('visible')
+    document.querySelector('.controls').classList.add('visible')
 };
 
 loadingManager.onError = function(url){
@@ -186,9 +219,10 @@ loadingManager.onError = function(url){
 document.querySelector('.label').addEventListener("click", ()=>
 {
     document.querySelector('.label').style.opacity = `0`
+    document.querySelector('.controls').classList.remove('visible')
     RESOURCES_LOADED = true
     controls.lock();
-    audio.play();
+    window.setTimeout(()=> {suspenseAmbientSound.play()},1000);
 })
 //<--------------------------------------------------------------------------------END LOADING OVERLAY>
 
@@ -211,7 +245,12 @@ window.addEventListener('resize',() =>
         camera.updateProjectionMatrix()
 
         //animate Renderer
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio,2))
         renderer.setSize(sizes.width,sizes.height)
+
+        //Update effect Composer
+        effectComposer.setPixelRatio(Math.min(window.devicePixelRatio,2))
+        effectComposer.setSize(sizes.width,sizes.height)
     })
 //<--------------------------------------------------------------------------------END RESIZE>
 
@@ -272,7 +311,61 @@ scene.add(camera)
 const textureLoader = new THREE.TextureLoader(loadingManager)
 
 const matcapTexture = textureLoader.load('textures/matcaps/0.png')
+
+//VIDEO TEXTURES
+const video = document.createElement( 'video' );
+video.src = 'videos/hack480.webm'
+video.playbackRate = 10
+video.autoplay = true;
+video.loop = true;
+video.preload = 'auto';
+
+const videoTexture = new THREE.VideoTexture(video)
+videoTexture.minFilter = THREE.LinearFilter;
+videoTexture.magFilter = THREE.LinearFilter;
+videoTexture.wrapS = THREE.RepeatWrapping
+videoTexture.wrapT = THREE.RepeatWrapping
+
 //<--------------------------------------------------------------------------------END TEXTURES>
+
+//AUDIO ----------------------------------------------------------------------->
+
+const audioListener = new THREE.AudioListener()
+camera.add(audioListener)
+const suspenseAmbientSound = new THREE.Audio(audioListener)
+scene.add(suspenseAmbientSound)
+const glitchSound = new THREE.Audio(audioListener)
+scene.add(glitchSound)
+
+const audioLoader = new THREE.AudioLoader(loadingManager)
+
+audioLoader.load(
+    'sounds/SuspenseMusic_DAGAProds_Fade.mp3',
+    (audio)=>
+    {
+        suspenseAmbientSound.setBuffer(audio)
+        suspenseAmbientSound.loop = true
+    }
+)
+
+audioLoader.load(
+    'sounds/glitchsound.wav',
+    (audio)=>
+    {
+        glitchSound.setBuffer(audio)
+    }
+)
+
+document.getElementById('mute').addEventListener("click", ()=>
+{
+    if (!suspenseAmbientSound.isPlaying) {
+        suspenseAmbientSound.play();
+    } else{
+        suspenseAmbientSound.pause()
+    }
+})
+//<--------------------------------------------------------------------------------END AUDIO>
+
 
 //FONTS ----------------------------------------------------------------------->
 const fontLoader = new THREE.FontLoader(loadingManager)
@@ -284,7 +377,7 @@ let textMesh2 = null
 let textMesh3 = null
 let textMesh4 = null
 let textMesh5 = null
-let textsY = -3
+let textsY = -3.1
 
 fontLoader.load(
     'fonts/Staatliches_Regular.json',
@@ -292,9 +385,9 @@ fontLoader.load(
     {
         const text1 = 'Hello.\nWelcome Again.'
         const text2 = 'Yes.\nYou have been here before.'
-        const text3 = 'Trust me.'
-        const text4 = '¿Are you in control\nof yourlife?'
-        const text5 = 'Enjoy.'
+        const text3 = "And if you don't.\nSoon you will be."
+        const text4 = "Maybe you don't know,\nBut somehow we are here."
+        const text5 = "Don't stop.\nEven if it's dark.\nBe aware."
 
         const textGeometry1 = new THREE.TextBufferGeometry(
             text1,
@@ -419,11 +512,10 @@ gltfLoader.setDRACOLoader(dracoLoader)
 
 /* Materials */
 const sceneMaterial = new THREE.MeshStandardMaterial()
-sceneMaterial.color = new THREE.Color('#020202')
+sceneMaterial.color = new THREE.Color(0x000000)
 
-const domeInMaterial = new THREE.MeshStandardMaterial()
-domeInMaterial.color = new THREE.Color('black')
-domeInMaterial.emissive = new THREE.Color('black')
+
+// const domeInMaterial = new THREE.MeshBasicMaterial()
 
 const domeExtMaterial = new THREE.MeshBasicMaterial()
 domeExtMaterial.color = new THREE.Color('black')
@@ -434,7 +526,7 @@ boundingBoxMaterial.transparent = true;
 boundingBoxMaterial.opacity = 0
 
 gltfLoader.load(
-    'models/scene/pathDome2.glb',
+    'models/scene/pathDome.glb',
     (glb) =>
     {
         const children = [...glb.scene.children]
@@ -446,7 +538,7 @@ gltfLoader.load(
                     child.material = boundingBoxMaterial
                     break;
                 case 'domeInside':
-                    child.material = domeInMaterial
+                    child.material = sceneMaterial
                     break;
                 case 'domeExterior':
                     child.material =domeExtMaterial
@@ -484,7 +576,6 @@ gltfLoader.load('models/all/allModels.gltf',
         scene.add(child)
     }
 })
-
 //<--------------------------------------------------------------------------------END MODELS>
 
 //RENDERER ----------------------------------------------------------------------->
@@ -502,12 +593,62 @@ renderer.outputEncoding = THREE.sRGBEncoding;
 // renderer.render(scene, camera)
 //<--------------------------------------------------------------------------------END RENDERER>
 
+//POST-PROCESSING ----------------------------------------------------------------------->
+//Render target to fix srgbEncoding
+let RenderTargetClass = null
+
+if (renderer.getPixelRatio() === 1 && renderer.capabilities.isWebGL2)
+{
+    RenderTargetClass = THREE.WebGLMultisampleRenderTarget    
+}
+else
+{
+    RenderTargetClass = THREE.WebGLRenderTarget
+}
+
+const renderTarget = new RenderTargetClass(
+    800,
+    600,
+    {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        format: THREE.RGBAFormat,
+        encoding: THREE.sRGBEncoding
+    }
+)
+
+//Composer effects
+const effectComposer = new EffectComposer(renderer, renderTarget)
+effectComposer.setPixelRatio(Math.min(window.devicePixelRatio,2))
+effectComposer.setSize(sizes.width,sizes.height)
+
+const renderPass = new RenderPass(scene,camera)
+effectComposer.addPass(renderPass)
+
+const filmPass = new FilmPass( 0.2, 0.15, 512, false );
+filmPass.enabled = true
+effectComposer.addPass(filmPass)
+
+const glitchPass = new GlitchPass()
+glitchPass.enabled = false
+effectComposer.addPass(glitchPass)
+
+
+if (renderer.getPixelRatio() === 1 && !renderer.capabilities.isWebGL2)
+{
+    const smaaPass = new SMAAPass()
+    effectComposer.addPass(smaaPass)
+}
+
+//<--------------------------------------------------------------------------------END POST-PROCESSINGR>
+
+
 //FIRST PERSON CONTROLS ----------------------------------------------------------------------->
 /* CAMERA MOVEMENT */
 const controls = new PointerLockControls(camera, canvas);
 // Adds a listener to when the canvas element has been clicked.
 // Once clicked the controls are locked and can be used. To escape the controls just press ESC
-canvas.addEventListener('click', () => 
+canvas.addEventListener('dblclick', () => 
 {
     controls.lock();
 })
@@ -518,7 +659,7 @@ const player =
 {
     speed: 0.07,
     walk: 0.07,
-    run: 0.07
+    run: 0.02
 }
 let isMoving = false;
 let isForward = false;
@@ -681,17 +822,29 @@ function move() {
 const clock = new THREE.Clock();
 let domeTime = null
 let domeTimecatch = false
+let glitchSoundTrigger = false
 
 scene.fog = new THREE.Fog(0x000000,30,100)
 let changeFog = false
 
+// function colorTo (target, value){
+//     var target = scene
+//     var initial = new THREE.Color(target.fog.color.getHex());
+//     var end = new THREE.Color(value);
+
+//     gsap.to(initial, {r: end.r, g: end.g, b: end.b, duration:5, ease: "sine.inOut",
+//         onUpdate: function() { target.fog.color = initial; }
+//     });
+// }
+
 //Function to change the fog inside the dome
 function fog(eventFog)
 {
-    if (eventFog)
+    if (eventFog){
         gsap.to(scene.fog, {near:30, far: 50, duration:.5, ease: "sine.inOut"})
-    else
-        gsap.to(scene.fog, {near:50, far: 100, duration:.5, ease: "sine.inOut"})
+    }else{
+        gsap.to(scene.fog, {near:50, far: 70, duration:.5, ease: "sine.inOut"})
+    }
 }
 
 //Function to trigger the texts
@@ -712,6 +865,23 @@ function textTrigger(meshtoTrigger,active) {
     }
 }
 
+function glitchFunction(){
+    glitchPass.enabled = true
+    glitchSound.play()
+    sceneMaterial.color = new THREE.Color(0x808080)
+    sceneMaterial.map = videoTexture
+    sceneMaterial.needsUpdate = true
+    glitchSoundTrigger = true
+    window.setTimeout(() =>{glitchPass.enabled = false}, 2000)
+    
+    gsap.to(scene.fog, {near:50, far: 200, duration:.5, ease: "sine.inOut"})
+    gsap.to(filmPass.uniforms.nIntensity,{value: 0.75, duration: .5, ease: "steps(6)"})
+    gsap.to(filmPass.uniforms.sIntensity,{repeat: -1, yoyo:true, value: .5, duration: 5, ease: "steps(6)"})
+
+
+
+}
+
 const frustum = new THREE.Frustum()
 let matrix = new THREE.Matrix4()
 
@@ -726,13 +896,34 @@ function animate() {
 
     stats.begin()
 
+    //Fog Change
+    if (camera.position.z >-173)
+    {
+        changeFog = true;
+        fog(changeFog)
+    }
+    else
+    {
+        changeFog = false;
+        fog(changeFog)
+    }
+
+     // Render every frame
+    // renderer.render(scene, camera);
+    
+    // Render post processing
+    effectComposer.render()
+
     const elapsedTime = clock.getElapsedTime()
 
     //Camera Fustrum Check update
     matrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
     frustum.setFromProjectionMatrix( matrix );
 
-    if (elapsedTime > (domeTime + 60)){
+    if ((elapsedTime > (domeTime + 60)) && domeTimecatch){
+        if (!glitchSoundTrigger){
+            glitchFunction()
+        }
         if (!frustum.intersectsObject(statues[0]))
             statues[0].lookAt(camera.position)
         if (!frustum.intersectsObject(statues[1]))
@@ -769,8 +960,6 @@ function animate() {
 
     move();
 
-    console.log(camera.position.z);
-
     if (camera.position.z < 15 && camera.position.z > -5){
         textTrigger(textMesh1, textTrigger1)
         textTrigger1 = true
@@ -795,24 +984,7 @@ function animate() {
     if ((camera.position.z < -173) && !domeTimecatch){
         domeTime = elapsedTime
         domeTimecatch = true;
-        console.log(domeTime);
-        console.log(domeTime+60);
     }
-
-    //Fog Change
-    if (camera.position.z >-173)
-    {
-        changeFog = true;
-        fog(changeFog)
-    }
-    else
-    {
-        changeFog = false;
-        fog(changeFog)
-    }
-
-    // Render every frame
-    renderer.render(scene, camera);
 
     stats.end()
 }
