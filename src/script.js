@@ -102,26 +102,26 @@ function debugUI ()
 
 //UI ----------------------------------------------------------------------->
 var imgSettings = document.createElement('img')
-imgSettings.src = './icons/settings.png'
+imgSettings.src = 'icons/settings.png'
 imgSettings.id = 'bars'
 var imgSpeaker = document.createElement('img')
-imgSpeaker.src = './icons/speakerIcon.png'
+imgSpeaker.src = 'icons/speakerIcon.png'
 imgSpeaker.id = 'mute'
 var imgFullscreen = document.createElement('img')
-imgFullscreen.src = './icons/fullscreenIcon.png'
+imgFullscreen.src = 'icons/fullscreenIcon.png'
 imgFullscreen.id = 'fullscreen'
 
 var imgTeclas = document.createElement('img')
-imgTeclas.src = './images/teclas.png'
+imgTeclas.src = 'images/teclas.png'
 imgTeclas.id = 'teclas'
 
-var src = document.querySelector('.icons');
-src.appendChild(imgSettings);
-src.appendChild(imgSpeaker);
-src.appendChild(imgFullscreen);
+var src1 = document.querySelector('.icons');
+src1.appendChild(imgSettings);
+src1.appendChild(imgSpeaker);
+src1.appendChild(imgFullscreen);
 
-src = document.querySelector('.controls')
-src.appendChild(imgTeclas);
+var src2 = document.querySelector('.controls');
+src2.appendChild(imgTeclas);
 
 
 
